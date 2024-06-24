@@ -37,10 +37,11 @@ class Pipeline(Thread):
 
     def __init__(self, config: Configuration ) -> None:
         try:
-            os.makedirs(config.training_pipeline_config.artifact_dir, exist_ok=True)
-            Pipeline.experiment_file_path=os.path.join(config.training_pipeline_config.artifact_dir,EXPERIMENT_DIR_NAME, EXPERIMENT_FILE_NAME)
+            
             super().__init__(daemon=False, name="pipeline")
             self.config = config
+            os.makedirs(config.training_pipeline_config.artifact_dir, exist_ok=True)
+            Pipeline.experiment_file_path=os.path.join(config.training_pipeline_config.artifact_dir,EXPERIMENT_DIR_NAME, EXPERIMENT_FILE_NAME)
         except Exception as e:
             raise HousingException(e, sys) from e
 
@@ -201,6 +202,10 @@ class Pipeline(Thread):
 
     @classmethod
     def get_experiments_status(cls, limit: int = 5) -> pd.DataFrame:
+        config = Configuration()
+        print(f"experiment_file_path: {config.training_pipeline_config.artifact_dir}")
+        Pipeline.experiment_file_path = os.path.join(config.training_pipeline_config.artifact_dir, EXPERIMENT_DIR_NAME,
+                                                     EXPERIMENT_FILE_NAME)
         try:
             if os.path.exists(Pipeline.experiment_file_path):
                 df = pd.read_csv(Pipeline.experiment_file_path)

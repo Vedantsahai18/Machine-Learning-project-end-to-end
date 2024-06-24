@@ -1,6 +1,6 @@
 from flask import Flask, request
 import sys
-
+import warnings
 import pip
 from housing.util.util import read_yaml_file, write_yaml_file
 from matplotlib.style import context
@@ -14,6 +14,10 @@ from housing.pipeline.pipeline import Pipeline
 from housing.entity.housing_predictor import HousingPredictor, HousingData
 from flask import send_file, abort, render_template
 
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=ResourceWarning)
 
 ROOT_DIR = os.getcwd()
 LOG_FOLDER_NAME = "logs"
@@ -78,6 +82,7 @@ def index():
 @app.route('/view_experiment_hist', methods=['GET', 'POST'])
 def view_experiment_history():
     experiment_df = Pipeline.get_experiments_status()
+    print(experiment_df)
     context = {
         "experiment": experiment_df.to_html(classes='table table-striped col-12')
     }
@@ -178,7 +183,7 @@ def update_model_config():
             write_yaml_file(file_path=MODEL_CONFIG_FILE_PATH, data=model_config)
 
         model_config = read_yaml_file(file_path=MODEL_CONFIG_FILE_PATH)
-        return render_template('update_model.html', result={"model_config": model_config})
+        return render_template('updated_model.html', result={"model_config": model_config})
 
     except  Exception as e:
         logging.exception(e)
@@ -199,6 +204,7 @@ def render_log_dir(req_path):
 
     # Check if path is a file and serve
     if os.path.isfile(abs_path):
+        print(abs_path)
         log_df = get_log_dataframe(abs_path)
         context = {"log": log_df.to_html(classes="table-striped", index=False)}
         return render_template('log.html', context=context)
@@ -215,4 +221,4 @@ def render_log_dir(req_path):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
